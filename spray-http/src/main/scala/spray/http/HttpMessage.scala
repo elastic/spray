@@ -21,6 +21,8 @@ import scala.reflect.{ classTag, ClassTag }
 import HttpHeaders._
 import HttpCharsets._
 
+import scala.runtime.ScalaRunTime
+
 sealed trait HttpMessagePartWrapper {
   def messagePart: HttpMessagePart
   def ack: Option[Any]
@@ -155,6 +157,15 @@ case class HttpRequest(method: HttpMethod = HttpMethods.GET,
   def message = this
   def isRequest = true
   def isResponse = false
+
+
+  /** Returns a redacted version of the request as a string
+    * @see HttpRequestRedactor
+    */
+  override def toString: String = {
+    val redacted = HttpRequestRedactor.redact(this)
+    ScalaRunTime._toString(redacted)
+  }
 
   def withEffectiveUri(securedConnection: Boolean, defaultHostHeader: Host = Host.empty): HttpRequest = {
     val hostHeader = header[Host]
