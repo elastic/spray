@@ -21,14 +21,16 @@ import com.typesafe.config.Config
 import scala.collection.immutable
 import akka.io.{ Inet, Tcp }
 import akka.actor._
-import spray.can.server.ServerSettings
+import spray.can.server.{ ServerFrontend, ServerSettings }
 import spray.can.client.{ HostConnectorSettings, ClientConnectionSettings }
-import spray.io.{ ConnectionTimeouts, ClientSSLEngineProvider, ServerSSLEngineProvider }
+import spray.io._
 import spray.http._
 import spray.util.actorSystem
 import scala.concurrent.duration.Duration
 
 object Http extends ExtensionKey[HttpExt] {
+
+  type Pipeline = RawPipelineStage[SslTlsContext with ServerFrontend.Context]
 
   sealed trait ClientConnectionType
   object ClientConnectionType {
@@ -55,11 +57,13 @@ object Http extends ExtensionKey[HttpExt] {
                   endpoint: InetSocketAddress,
                   backlog: Int,
                   options: immutable.Traversable[Inet.SocketOption],
-                  settings: Option[ServerSettings])(implicit val sslEngineProvider: ServerSSLEngineProvider) extends Command
+                  settings: Option[ServerSettings],
+                  setupPipeline: Pipeline ⇒ Pipeline)(implicit val sslEngineProvider: ServerSSLEngineProvider) extends Command
   object Bind {
     def apply(listener: ActorRef, interface: String, port: Int = 80, backlog: Int = 100,
-              options: immutable.Traversable[Inet.SocketOption] = Nil, settings: Option[ServerSettings] = None)(implicit sslEngineProvider: ServerSSLEngineProvider): Bind =
-      apply(listener, new InetSocketAddress(interface, port), backlog, options, settings)
+              options: immutable.Traversable[Inet.SocketOption] = Nil, settings: Option[ServerSettings] = None,
+              setupPipeline: Pipeline ⇒ Pipeline = Predef.identity[Pipeline])(implicit sslEngineProvider: ServerSSLEngineProvider): Bind =
+      apply(listener, new InetSocketAddress(interface, port), backlog, options, settings, setupPipeline)
   }
 
   case class HostConnectorSetup(host: String, port: Int = 80,

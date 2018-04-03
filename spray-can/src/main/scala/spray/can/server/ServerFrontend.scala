@@ -29,7 +29,7 @@ import spray.io._
 import spray.util.Timestamp
 import akka.io.Tcp.NoAck
 
-private object ServerFrontend {
+object ServerFrontend {
 
   trait Context extends PipelineContext {
     // the application-level request handler
