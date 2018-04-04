@@ -33,7 +33,7 @@ private[can] class HttpListener(bindCommander: ActorRef,
   private val connectionCounter = Iterator from 0
   private val settings = bind.settings getOrElse ServerSettings(system)
   private val statsHolder = if (settings.statsSupport) Some(new StatsHolder) else None
-  private val pipelineStage = HttpServerConnection.pipelineStage(settings, statsHolder)
+  private val pipelineStage = bind.setupPipeline(HttpServerConnection.pipelineStage(settings, statsHolder))
 
   context.watch(listener)
 
