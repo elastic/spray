@@ -162,7 +162,7 @@ case class HttpRequest(method: HttpMethod = HttpMethods.GET,
   /** Returns a redacted version of the request as a string
     * @see HttpRequestRedactor
     */
-  override def toString: String = {
+  override final def toString: String = {
     val redacted = HttpRequestRedactor.redact(this)
     ScalaRunTime._toString(redacted)
   }
