@@ -18,6 +18,7 @@ package spray.httpx.marshalling
 
 import akka.actor.ActorRef
 import spray.http._
+import spray.util.ContextAttributes
 
 trait MarshallingContext {
 
@@ -87,6 +88,8 @@ trait MarshallingContext {
       override def startChunkedMessage(entity: HttpEntity, ack: Option[Any], headers: Seq[HttpHeader])(implicit sender: ActorRef) =
         underlying.startChunkedMessage(f(entity), ack, headers)
     }
+
+  val attributes: ContextAttributes
 }
 
 /**
@@ -94,12 +97,15 @@ trait MarshallingContext {
  * wraps another MarshallingContext with some extra logic.
  */
 class DelegatingMarshallingContext(protected val underlying: MarshallingContext) extends MarshallingContext {
+
   def tryAccept(contentTypes: Seq[ContentType]) = underlying.tryAccept(contentTypes)
   def rejectMarshalling(supported: Seq[ContentType]): Unit = underlying.rejectMarshalling(supported)
   def marshalTo(entity: HttpEntity, headers: HttpHeader*): Unit = underlying.marshalTo(entity, headers: _*)
   def handleError(error: Throwable): Unit = underlying.handleError(error)
   def startChunkedMessage(entity: HttpEntity, ack: Option[Any] = None, headers: Seq[HttpHeader] = Nil)(implicit sender: ActorRef) =
     underlying.startChunkedMessage(entity, ack, headers)
+
+  override val attributes: ContextAttributes = underlying.attributes
 }
 
 trait ToResponseMarshallingContext {
@@ -169,6 +175,8 @@ trait ToResponseMarshallingContext {
       override def startChunkedMessage(response: HttpResponse, ack: Option[Any])(implicit sender: ActorRef): ActorRef =
         underlying.startChunkedMessage(f(response), ack)
     }
+
+  val attributes: ContextAttributes
 }
 
 /**
@@ -183,4 +191,6 @@ class DelegatingToResponseMarshallingContext(protected val underlying: ToRespons
   def handleError(error: Throwable): Unit = underlying.handleError(error)
   def startChunkedMessage(response: HttpResponse, ack: Option[Any])(implicit sender: ActorRef): ActorRef =
     underlying.startChunkedMessage(response, ack)
+
+  override val attributes: ContextAttributes = underlying.attributes
 }
