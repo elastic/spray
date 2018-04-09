@@ -10,7 +10,7 @@ import com.typesafe.sbt.osgi.SbtOsgi
 import SbtOsgi._
 
 object BuildSettings {
-  val VERSION = "1.3.4-elastic-cloud-SNAPSHOT"
+  val VERSION = "1.3.5-elastic-cloud"
 
   lazy val basicSettings = seq(
     version               := NightlyBuildSupport.buildVersion(VERSION),
