@@ -134,9 +134,9 @@ object Http extends ExtensionKey[HttpExt] {
   case class HostConnectorInfo(hostConnector: ActorRef, setup: HostConnectorSetup) extends Event
 
   // exceptions
-  class ConnectionException(message: String) extends RuntimeException(message)
+  class ConnectionException(message: String, cause: Throwable = null) extends RuntimeException(message, cause)
 
-  class ConnectionAttemptFailedException(val host: String, val port: Int) extends ConnectionException(s"Connection attempt to $host:$port failed")
+  class ConnectionAttemptFailedException(val host: String, val port: Int, cause: Throwable = null) extends ConnectionException(s"Connection attempt to $host:$port failed", cause)
 
   class RequestTimeoutException(val request: HttpRequestPart with HttpMessageStart, message: String)
     extends ConnectionException(message)
